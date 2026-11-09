@@ -17,6 +17,24 @@ from telebot import apihelper
 if 'PYTHONANYWHERE_DOMAIN' in os.environ or 'PYTHONANYWHERE_SITE' in os.environ or os.path.exists('/etc/pythonanywhere'):
     apihelper.proxy = {'https': 'http://proxy.server:3128'}
 
+# Запуск встроенного веб-сервера для Render / хостингов с проверкой порта (Health Check)
+if os.getenv("PORT"):
+    import threading
+    from http.server import HTTPServer, BaseHTTPRequestHandler
+    class SimpleHealthHandler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b"OK")
+        def log_message(self, format, *args):
+            pass
+    def start_http():
+        port = int(os.getenv("PORT", 8080))
+        httpd = HTTPServer(('0.0.0.0', port), SimpleHealthHandler)
+        httpd.serve_forever()
+    threading.Thread(target=start_http, daemon=True).start()
+
+
 
 # Загружаем переменные окружения из .env файла
 load_dotenv()
