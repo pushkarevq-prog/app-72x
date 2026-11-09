@@ -85,6 +85,20 @@ def send_welcome(message):
         print(f"Замечание по MenuButton: {e}")
 
 if __name__ == "__main__":
+    import time
     print(f"[OK] Бот запущен! WEB_APP_URL: {WEB_APP_URL}")
     print("Ожидание сообщений в Telegram (Ctrl+C для остановки)...")
-    bot.infinity_polling(skip_pending=True)
+    while True:
+        try:
+            bot.infinity_polling(skip_pending=True, timeout=20, long_polling_timeout=20)
+        except telebot.apihelper.ApiTelegramException as e:
+            if getattr(e, 'error_code', None) == 409:
+                print("[409 Conflict] Переключение версий бота, ожидание 5 сек...")
+                time.sleep(5)
+            else:
+                print(f"[Telegram API Exception]: {e}")
+                time.sleep(3)
+        except Exception as e:
+            print(f"[Polling Exception]: {e}")
+            time.sleep(3)
+
