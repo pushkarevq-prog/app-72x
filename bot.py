@@ -52,37 +52,32 @@ bot = telebot.TeleBot(BOT_TOKEN, parse_mode="HTML")
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
-    user_name = message.from_user.first_name or "Гонщик"
+    user_name = message.from_user.first_name or "Пользователь"
     print(f"[OK] Получена команда /start от {user_name} (@{message.from_user.username or message.from_user.id})")
+    
+    # Нейтральный текст и кнопка (можно переопределять через Render Environment Variables)
+    button_text = os.getenv("BUTTON_TEXT", "🚀 Запустить")
+    default_text = f"👋 Привет, <b>{user_name}</b>!\n\nДля старта просто нажми на эту кнопку! 👇"
+    welcome_text = os.getenv("WELCOME_TEXT", default_text)
     
     # Кнопка под сообщением
     markup = types.InlineKeyboardMarkup()
     play_button = types.InlineKeyboardButton(
-        text="🏎️ ИГРАТЬ В ГОНКУ!", 
+        text=button_text, 
         web_app=types.WebAppInfo(url=WEB_APP_URL)
     )
     markup.add(play_button)
-
-    welcome_text = (
-        f"👋 Привет, <b>{user_name}</b>!\n\n"
-        f"🏎️ Добро пожаловать в <b>Cyber Racer</b> — динамичную аркадную гонку прямо в Telegram!\n\n"
-        f"🎮 <b>Как играть:</b>\n"
-        f"• Уворачивайся от трафика и грузовиков 🚗\n"
-        f"• Собирай золотые монеты 🟡\n"
-        f"• Хватай ⚡ <b>Нитро</b>, 🛡️ <b>Щит</b> и 🧲 <b>Магнит</b>\n"
-        f"• Ставь новые рекорды скорости!\n\n"
-        f"<i>Нажми кнопку ниже, чтобы завести мотор!</i> 👇"
-    )
 
     bot.send_message(message.chat.id, welcome_text, reply_markup=markup)
 
     # Настраиваем постоянную кнопку "Меню" внизу чата
     try:
+        menu_text = os.getenv("MENU_BUTTON_TEXT", "🚀 Открыть")
         bot.set_chat_menu_button(
             chat_id=message.chat.id,
             menu_button=types.MenuButtonWebApp(
                 type="web_app",
-                text="🎮 Играть",
+                text=menu_text,
                 web_app=types.WebAppInfo(url=WEB_APP_URL)
             )
         )
